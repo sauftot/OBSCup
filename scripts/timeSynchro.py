@@ -1,15 +1,40 @@
 import obspython as OBS
-import json
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.common.exceptions import NoSuchElementException
+from time import sleep
+import json, threading
 
 data = lambda: ...
 data.path = ''
-data.running = False
+data.code = ''
 data.syncTime = False
 
 
-### THREADS
+### THREADS, DUMMY FOR NOW
 
-
+def updaterThread():
+    print("INFO: Thread started")
+    options = webdriver.ChromeOptions()
+    options.add_argument('headless')
+    driver = webdriver.Chrome(executable_path='../chromedriver.exe', chrome_options=options)
+    driver.set_window_size(1920, 1080)
+    driver.get('https://chronograph.io/' + data.code)
+    sleep(1)
+    while data.syncTime:
+        with open(data.path, 'w') as fh:
+            try:
+                minutes = driver.find_element(By.XPATH, "/html/body/div[2]/div[1]/div/div[1]/div[2]/div[2]/div/div[3]/div/div[2]/div/h3/span[2]")
+                seconds = driver.find_element(By.XPATH, "/html/body/div[2]/div[1]/div/div[1]/div[2]/div[2]/div/div[4]/div/div[2]/div/h3/span[2]")
+                fh.write(minutes.text + ":" + seconds.text)
+                fh.close()
+            except NoSuchElementException:
+                print("ERROR: Element not found")
+                fh.close()
+        sleep(0.1)
+            
+    
+    print("Thread stopped")
 
 
 
@@ -25,18 +50,30 @@ def cbFilePath(props, prop, settings):
         d = str([jObj["Time File"]])
         n = d.replace("[", "")
         m = n.replace("]", "")
-        k = m.replace("\'", "")
+        t = m.replace("\"", "")
+        k = t.replace("\'", "")
         data.path = k
-        print("INFO.PATH: " + data.path)
 
 # callback for setting the chrono code
 def cbChronoCode(props, prop, settings):
-    None
+    j = OBS.obs_data_get_json(settings)
+    jObj = json.loads(j)
+    if "Chrono Code" in j:
+        d = str([jObj["Chrono Code"]])
+        n = d.replace("[", "")
+        m = n.replace("]", "")
+        t = m.replace("\"", "")
+        k = t.replace("\'", "")
+        data.code = k
 
 # callback for our toggle button
-def cbStartButton(props, prop, settings):
-    None
-
+def cbStartButton(props, prop, *args, **kwargs):
+    if data.syncTime == False:
+        t = threading.Thread(target=updaterThread)
+        data.syncTime = True
+        t.start()
+    else:
+        data.syncTime = False
 
 
 
@@ -46,6 +83,7 @@ def script_load(settings):
     print("INFO: timeSynchro loaded.")
 
 def script_unload():
+    data.syncTime = False
     print("INFO: timeSynchro unloaded.")
 
 def script_properties():
@@ -59,10 +97,9 @@ def script_properties():
     OBS.obs_property_set_visible(chronoCode, True)
     OBS.obs_property_set_modified_callback(chronoCode, cbChronoCode)
     # Start Button
-    startButton = OBS.obs_properties_add_button(sSettings, 'Start', 'Start')
+    startButton = OBS.obs_properties_add_button(sSettings, 'Toggle', 'Toggle', cbStartButton)
     OBS.obs_property_set_visible(startButton, True)
-    OBS.obs_property_set_modified_callback(startButton, cbStartButton)
     return sSettings
 
 def script_description():
-    return "Select the txt timer file for OBS, then paste your chronograph io link into the text box."
+    return "Select the txt timer file for OBS, then paste your chronograph io code into the text box."
