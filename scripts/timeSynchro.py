@@ -17,13 +17,14 @@ def updaterThread():
     print("INFO: Thread started")
     options = webdriver.ChromeOptions()
     options.add_argument('headless')
+    options.add_experimental_option('excludeSwitches', ['enable-logging'])
     driver = webdriver.Chrome(executable_path='../chromedriver.exe', chrome_options=options)
     driver.set_window_size(1920, 1080)
     driver.get('https://chronograph.io/' + data.code)
     oMinutes = 0
     oSeconds = 0
     sleep(1)
-        
+    
     while data.syncTime:
         try:
             minutes = int(driver.find_element(By.XPATH, "/html/body/div[2]/div[1]/div/div[1]/div[2]/div[2]/div/div[3]/div/div[2]/div/h3/span[2]").text)
