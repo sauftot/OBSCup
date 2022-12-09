@@ -20,21 +20,24 @@ def updaterThread():
     driver = webdriver.Chrome(executable_path='../chromedriver.exe', chrome_options=options)
     driver.set_window_size(1920, 1080)
     driver.get('https://chronograph.io/' + data.code)
+    oMinutes = 0
+    oSeconds = 0
     sleep(1)
+        
     while data.syncTime:
-        with open(data.path, 'w') as fh:
-            try:
-                minutes = driver.find_element(By.XPATH, "/html/body/div[2]/div[1]/div/div[1]/div[2]/div[2]/div/div[3]/div/div[2]/div/h3/span[2]")
-                seconds = driver.find_element(By.XPATH, "/html/body/div[2]/div[1]/div/div[1]/div[2]/div[2]/div/div[4]/div/div[2]/div/h3/span[2]")
-                fh.write(minutes.text + ":" + seconds.text)
-                fh.close()
-            except NoSuchElementException:
-                print("ERROR: Element not found")
-                fh.close()
+        try:
+            minutes = int(driver.find_element(By.XPATH, "/html/body/div[2]/div[1]/div/div[1]/div[2]/div[2]/div/div[3]/div/div[2]/div/h3/span[2]").text)
+            seconds = int(driver.find_element(By.XPATH, "/html/body/div[2]/div[1]/div/div[1]/div[2]/div[2]/div/div[4]/div/div[2]/div/h3/span[2]").text)
+            if minutes != oMinutes or seconds != oSeconds:
+                with open(data.path, 'w') as fh:
+                    fh.write(str(minutes) + ":" + str(seconds))
+                    fh.close()
+                    oMinutes = minutes
+                    oSeconds = seconds
+        except NoSuchElementException:
+            print("ERROR: Element not found")
         sleep(0.1)
-            
-    
-    print("Thread stopped")
+    print("INFO: Thread stopped")
 
 
 
