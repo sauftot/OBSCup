@@ -11,14 +11,17 @@ data.code = ''
 data.syncTime = False
 
 
-### THREADS, DUMMY FOR NOW
+"""
+    TODO: SELECT TIMER FROM WEBSITE BY CLICK
+    TODO: ADD COOLDOWN TO TOGGLE BUTTON
+"""
 
 def updaterThread():
     print("INFO: Thread started")
     options = webdriver.ChromeOptions()
     options.add_argument('headless')
     options.add_experimental_option('excludeSwitches', ['enable-logging'])
-    driver = webdriver.Chrome(executable_path='../chromedriver.exe', chrome_options=options)
+    driver = webdriver.Chrome(chrome_options=options)
     driver.set_window_size(1920, 1080)
     driver.get('https://chronograph.io/' + data.code)
     oMinutes = 0
