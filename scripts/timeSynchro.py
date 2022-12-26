@@ -26,7 +26,7 @@ def updaterThread():
     driver.get('https://chronograph.io/' + data.code)
     oMinutes = 0
     oSeconds = 0
-    sleep(1)
+    sleep(5)
     
     while data.syncTime:
         try:
@@ -34,7 +34,10 @@ def updaterThread():
             seconds = int(driver.find_element(By.XPATH, "/html/body/div[2]/div[1]/div/div[1]/div[2]/div[2]/div/div[4]/div/div[2]/div/h3/span[2]").text)
             if minutes != oMinutes or seconds != oSeconds:
                 with open(data.path, 'w') as fh:
-                    fh.write(str(minutes) + ":" + str(seconds))
+                    sec = str(seconds)
+                    if seconds < 10:
+                        sec = '0' + str(seconds)
+                    fh.write(str(minutes) + ":" + sec)
                     fh.close()
                     oMinutes = minutes
                     oSeconds = seconds
